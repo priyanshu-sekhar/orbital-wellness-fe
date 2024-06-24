@@ -11,7 +11,7 @@ The project is structured as follows:
   - `interface/`: Contains TypeScript interfaces used throughout the application.
   - `helpers/`: Contains helper functions.
 - `test/`: Contains test files for the application.
-- `jest.config.ts`: Configuration file for Jest, the testing framework used in this project.
+- `babel.config.js`: Configures Babel for the project.
 - `package.json`: Defines the project's npm dependencies and scripts.
 
 ## Setup Instructions
