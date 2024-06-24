@@ -1,6 +1,6 @@
 import DashboardContainer from "@/containers/DashboardContainer";
 import React from "react";
-import "../app/globals.css";
+import "@/app/globals.css";
 
 const Home: React.FC = () => {
     return (

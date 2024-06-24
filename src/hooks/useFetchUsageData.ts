@@ -1,3 +1,8 @@
+// `useFetchUsageData` is a custom hook for fetching usage data from the backend.
+// It uses the Fetch API to get data from the server and stores it in the `usageData` state.
+// The data is fetched when the component mounts (due to the empty dependency array in `useEffect`).
+// If the fetch is successful, the data is formatted and set in the `usageData` state.
+// If the fetch fails, an error message is logged to the console.
 import {UsageData} from "@/interface/usage.interface";
 import {useEffect, useState} from "react";
 import {formatTimestamp} from "@/helpers/helpers";

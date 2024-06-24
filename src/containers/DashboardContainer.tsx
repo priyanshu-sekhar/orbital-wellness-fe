@@ -1,3 +1,6 @@
+// `DashboardContainer` is a container component that fetches and displays usage data.
+// It uses the `useFetchUsageData` hook to fetch the data and passes it to the `BarChart` and `UsageTableContainer` components for display.
+// The `BarChart` displays the daily credit usage and the `UsageTableContainer` displays the usage details.
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import SubHeader from "@/components/SubHeader";

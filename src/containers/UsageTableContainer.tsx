@@ -1,7 +1,12 @@
+// `UsageTableContainer` is a container component that displays a table of usage data.
+// It uses the `useSort` hook to handle sorting of the table data.
+// The table displays several fields of the usage data, and each field can be sorted in ascending, descending, or no order.
+// The initial sort criteria is set for 'report_name' and 'credits_used' fields to 'none'.
+// The `handleSort` function from `useSort` is used as the callback when a sort action is performed on the table.
 import React, {useEffect, useState} from 'react';
 import { UsageData } from '@/interface/usage.interface';
-import {useRouter} from "next/router";
 import Table from '@/components/Table';
+import useSort from "@/hooks/useSort";
 
 type SortOrder = 'asc' | 'desc' | 'none';
 
@@ -11,48 +16,37 @@ interface SortCriteria {
 }
 
 const UsageTableContainer: React.FC<{ rows: UsageData[] }> = ({ rows }) => {
-    const router = useRouter();
-
-    const [sortCriteria, setSortCriteria] = useState<SortCriteria[]>([
+    const [sortedRows, setSortedRows] = useState<UsageData[]>(rows);
+    const initialSortCriteria: SortCriteria[] = [
         { field: 'report_name', order: 'none' },
         { field: 'credits_used', order: 'none' },
-    ]);
+    ];
+    const { sortCriteria, handleSort } = useSort(initialSortCriteria);
 
     useEffect(() => {
-        const sort = router.query.sort as string;
-        const field = router.query.field as string;
-        if (sort && field) {
-            const sortCriteria: SortCriteria[] = field.split(',').map((field, index) => ({
-                field: field as keyof UsageData,
-                order: sort.split(',')[index] as SortOrder,
-            }));
-            setSortCriteria(sortCriteria);
-        }
-    }, [router.query]);
-
-    const handleSort = async (field: keyof UsageData) => {
-        const newSortCriteria = sortCriteria.map(criteria => {
-            if (criteria.field === field) {
-                const newOrder = criteria.order === 'asc' ? 'desc' : criteria.order === 'desc' ? 'none' : 'asc';
-                return { field, order: newOrder };
+        const sortedRows = [...rows].sort((a, b) => {
+            for (const { field, order } of sortCriteria) {
+                if (order === 'asc') {
+                    if (a[field] < b[field]) return -1;
+                    if (a[field] > b[field]) return 1;
+                } else if (order === 'desc') {
+                    if (a[field] > b[field]) return -1;
+                    if (a[field] < b[field]) return 1;
+                }
             }
-            return criteria;
+            return 0;
         });
-
-        const searchParams = new URLSearchParams();
-        searchParams.set('sort', newSortCriteria.map(criteria => criteria.order).join(','));
-        searchParams.set('field', newSortCriteria.map(criteria => criteria.field).join(','));
-        await router.push({ search: searchParams.toString() });
-    };
+        setSortedRows(sortedRows);
+    }, [rows, sortCriteria]);
 
     return (
         <Table
-            rows={rows}
+            rows={sortedRows}
             headers={[
-                { field: 'message_id', displayName: 'Message ID' },
-                { field: 'timestamp', displayName: 'Timestamp' },
-                { field: 'report_name', displayName: 'Report Name' },
-                { field: 'credits_used', displayName: 'Credits Used' },
+                { field: 'message_id', displayName: 'Message ID', sortable: false },
+                { field: 'timestamp', displayName: 'Timestamp', sortable: false },
+                { field: 'report_name', displayName: 'Report Name', sortable: true },
+                { field: 'credits_used', displayName: 'Credits Used', sortable: true },
             ]}
             sortCriteria={sortCriteria}
             onSort={(field) => handleSort(field as keyof UsageData)}
