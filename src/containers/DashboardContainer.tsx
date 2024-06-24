@@ -6,13 +6,14 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import SubHeader from "@/components/SubHeader";
 import UsageTableContainer from "@/containers/UsageTableContainer";
 import Header from "@/components/Header";
-import useFetchUsageData from "@/hooks/useFetchUsageData";
 import {getDailyUsageData} from "@/helpers/usage";
+import {UsageData} from "@/interface/usage.interface";
 
+interface DashboardContainerProps {
+    usageData: UsageData[];
+}
 
-const DashboardContainer: React.FC = () => {
-    const usageData = useFetchUsageData();
-
+const DashboardContainer: React.FC<DashboardContainerProps> = ({usageData}) => {
     return (
         <>
             <Header title={"Credit Usage Dashboard"}/>

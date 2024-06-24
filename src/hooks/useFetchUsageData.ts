@@ -9,9 +9,11 @@ import {formatTimestamp} from "@/helpers/helpers";
 
 const useFetchUsageData = () => {
     const [usageData, setUsageData] = useState<UsageData[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchUsageData = async () => {
+            setIsLoading(true);
             try {
                 const response = await fetch('http://localhost:8000/usage');
                 if (response.ok) {
@@ -29,12 +31,13 @@ const useFetchUsageData = () => {
             } catch (error) {
                 console.error('Error fetching usage data:', error);
             }
+            setIsLoading(false);
         };
 
         fetchUsageData();
     }, []);
 
-    return usageData;
+    return {usageData, isLoading};
 }
 
 export default useFetchUsageData;
