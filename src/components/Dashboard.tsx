@@ -4,7 +4,6 @@ import { parseISO, format } from 'date-fns';
 import {DailyUsageData, UsageData} from "@/interface/usage.interface";
 import {Grid} from "@mui/material";
 import SortableUsageTable from "@/components/tables/SortableUsageTable";
-import {Box} from "@mui/system";
 import Header from "@/components/Header";
 
 

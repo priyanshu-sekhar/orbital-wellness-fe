@@ -1,6 +1,9 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import { UsageData } from '@/interface/usage.interface';
 import {format, parseISO} from "date-fns";
+import {useRouter} from "next/router";
+
+type SortOrder = 'asc' | 'desc' | 'none';
 
 interface SortableTableProps {
     rows: UsageData[];
@@ -8,24 +11,44 @@ interface SortableTableProps {
 
 interface SortCriteria {
     field: keyof UsageData;
-    order: 'asc' | 'desc' | 'none';
+    order: SortOrder;
 }
 
 const SortableUsageTable: React.FC<SortableTableProps> = ({ rows }) => {
+    const router = useRouter();
+
+    useEffect(() => {
+        // url would look like https://localhost:3000?sort=asc,desc&field=report_name,credits_used
+        const sort = router.query.sort as string;
+        const field = router.query.field as string;
+        if (sort && field) {
+            const sortCriteria: SortCriteria[] = field.split(',').map((field, index) => ({
+                field: field as keyof UsageData,
+                order: sort.split(',')[index] as SortOrder,
+            }));
+            setSortCriteria(sortCriteria);
+        }
+    }, [router.query]);
+
     const [sortCriteria, setSortCriteria] = useState<SortCriteria[]>([
         { field: 'report_name', order: 'none' },
         { field: 'credits_used', order: 'none' },
     ]);
     const [sortedRows, setSortedRows] = useState<UsageData[]>([]);
 
-    const handleSort = (field: keyof UsageData) => {
-        setSortCriteria(sortCriteria.map(criteria => {
+    const handleSort = async (field: keyof UsageData) => {
+        const newSortCriteria = sortCriteria.map(criteria => {
             if (criteria.field === field) {
                 const newOrder = criteria.order === 'asc' ? 'desc' : criteria.order === 'desc' ? 'none' : 'asc';
                 return { field, order: newOrder };
             }
             return criteria;
-        }));
+        });
+
+        const searchParams = new URLSearchParams();
+        searchParams.set('sort', newSortCriteria.map(criteria => criteria.order).join(','));
+        searchParams.set('field', newSortCriteria.map(criteria => criteria.field).join(','));
+        await router.push({ search: searchParams.toString() });
     };
 
     useEffect(() => {
@@ -49,7 +72,7 @@ const SortableUsageTable: React.FC<SortableTableProps> = ({ rows }) => {
         return format(parseISO(timestamp), 'yyyy-MM-dd HH:mm');
     };
 
-    const renderSortableHeader = (field: keyof UsageData, displayName: string) => {
+    const renderSortableHeader = useCallback((field: keyof UsageData, displayName: string) => {
         const order = sortCriteria.find(criteria => criteria.field === field)?.order;
         let icon;
         switch (order) {
@@ -67,18 +90,18 @@ const SortableUsageTable: React.FC<SortableTableProps> = ({ rows }) => {
                 {displayName} <span className="ml-2">{icon}</span>
             </th>
         );
-    };
+    }, [sortCriteria]);
 
     return (
         <div style={{ maxHeight: '50vh', overflowY: 'auto' }}>
             <table className="table-auto w-full">
                 <thead>
-                <tr>
-                    <th className="px-4 py-2">Message ID</th>
-                    <th className="px-4 py-2">Timestamp</th>
-                    {renderSortableHeader('report_name', 'Report Name')}
-                    {renderSortableHeader('credits_used', 'Credits Used')}
-                </tr>
+                    <tr>
+                        <th className="px-4 py-2">Message ID</th>
+                        <th className="px-4 py-2">Timestamp</th>
+                        {renderSortableHeader('report_name', 'Report Name')}
+                        {renderSortableHeader('credits_used', 'Credits Used')}
+                    </tr>
                 </thead>
                 <tbody>
                 {sortedRows.map((row, index) => {
@@ -91,9 +114,9 @@ const SortableUsageTable: React.FC<SortableTableProps> = ({ rows }) => {
                             <td className="border px-4 py-2">{formattedTimestamp}</td>
                             <td className="border px-4 py-2">{row.report_name}</td>
                             <td className="border px-4 py-2">{roundedCredits}</td>
-                            </tr>
-                        );
-                    })}
+                        </tr>
+                    );
+                })}
                 </tbody>
             </table>
         </div>
