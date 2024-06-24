@@ -20,6 +20,9 @@ const useSort = (initialSortCriteria: SortCriteria[]) => {
 
     // Update the sort criteria state when the router query changes.
     useEffect(() => {
+        if (!router.query.sort || !router.query.field) {
+            return;
+        }
         const sort = router.query.sort as string;
         const field = router.query.field as string;
         if (sort && field) {

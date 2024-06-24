@@ -1,5 +1,5 @@
 export interface UsageData {
-    message_id: string;
+    message_id: number;
     timestamp: string;
     report_name: string;
     credits_used: number;

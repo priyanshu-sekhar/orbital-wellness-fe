@@ -9,6 +9,9 @@ jest.mock('next/router', () => ({
 describe('useSort', () => {
   it('initializes with the provided sort criteria', () => {
     const initialSortCriteria: SortCriteria[] = [{ field: 'timestamp', order: 'asc' }];
+    (useRouter as jest.Mock).mockReturnValue({
+      query: { sort: 'asc', field: 'timestamp' },
+    });
     const { result } = renderHook(() => useSort(initialSortCriteria));
 
     expect(result.current.sortCriteria).toEqual(initialSortCriteria);
