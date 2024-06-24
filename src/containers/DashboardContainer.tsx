@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { parseISO, format } from 'date-fns';
 import {DailyUsageData, UsageData} from "@/interface/usage.interface";
-import {Grid} from "@mui/material";
-import SortableUsageTable from "@/components/tables/SortableUsageTable";
+import SubHeader from "@/components/SubHeader";
+import UsageTableContainer from "@/containers/UsageTableContainer";
+import {formatTimestamp} from "@/helpers/helpers";
 import Header from "@/components/Header";
 
 
-const Dashboard: React.FC = () => {
+const DashboardContainer: React.FC = () => {
     const [usageData, setUsageData] = useState<UsageData[]>([]);
 
     useEffect(() => {
@@ -19,7 +20,13 @@ const Dashboard: React.FC = () => {
             const response = await fetch('http://localhost:8000/usage');
             if (response.ok) {
                 const data = await response.json();
-                setUsageData(data.usage);
+                const usageData = data.usage as UsageData[];
+                const formattedUsageData: UsageData[] = usageData.map((item) => ({
+                    ...item,
+                    timestamp: formatTimestamp(item.timestamp),
+                    credits_used: Number(item.credits_used.toFixed(2)),
+                }));
+                setUsageData(formattedUsageData);
             } else {
                 console.error('Failed to fetch usage data');
             }
@@ -27,8 +34,6 @@ const Dashboard: React.FC = () => {
             console.error('Error fetching usage data:', error);
         }
     };
-
-
 
     const getDailyUsageData = (): DailyUsageData[] => {
         const dailyUsage: { [key: string]: number } = {};
@@ -40,29 +45,29 @@ const Dashboard: React.FC = () => {
     };
 
     return (
-        <Grid container margin={1} spacing={1} md={11} alignItems={"center"}>
-            <h1 className="text-3xl font-bold mb-4">Credit Usage Dashboard</h1>
+        <>
+            <Header title={"Credit Usage Dashboard"}/>
 
-            <Grid item container>
-                <Header title={"Daily Credit Usage"}/>
-                <ResponsiveContainer width="100%" height={400}>
+            <div className={"space-y-4 space-x-4"}>
+                <SubHeader title={"Daily Credit Usage"}/>
+                <ResponsiveContainer height={400}>
                     <BarChart data={getDailyUsageData()}>
                         <XAxis dataKey="date" />
                         <YAxis />
-                        {/*<Tooltip />*/}
+                        <Tooltip />
                         <Bar dataKey="credits_used" fill="#8884d8" />
                     </BarChart>
                 </ResponsiveContainer>
-            </Grid>
+            </div>
 
-            <Grid item container>
-                <Header title={"Usage Details"}/>
-                <SortableUsageTable
+            <div className={"space-y-4"}>
+                <SubHeader title={"Usage Details"}/>
+                <UsageTableContainer
                     rows={usageData}
                 />
-            </Grid>
-        </Grid>
+            </div>
+        </>
     );
 };
 
-export default Dashboard;
+export default DashboardContainer;
